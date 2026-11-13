@@ -1,8 +1,8 @@
+import { Link } from "react-router-dom";
 import { AlertCircle, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { useFormStats, useRecentFormActivity } from "@/features/forms/api";
 import { describeAudit, timeAgo } from "@/lib/format";
 import { PageHeader } from "./PageHeader";
@@ -27,8 +27,8 @@ export function OverviewPage() {
     <>
       <PageHeader title="Overview" description="Your forms at a glance."
         actions={
-          <Button disabled title="The form builder arrives in Phase 2">
-            <PlusCircle className="h-4 w-4" aria-hidden="true" /> Create form <Badge variant="warning" className="ml-1">Phase 2</Badge>
+          <Button asChild>
+            <Link to="/forms/new"><PlusCircle className="h-4 w-4" aria-hidden="true" /> Create form</Link>
           </Button>
         } />
 

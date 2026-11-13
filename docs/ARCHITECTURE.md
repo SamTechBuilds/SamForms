@@ -27,3 +27,15 @@ Netlify (SPA redirect, env vars) + Supabase (migrations via CLI, secrets via `su
 - **Versions:** Tailwind 3.4 (stable with shadcn tooling), Vite 5, React 18, React Router 7.18 (v6 had open advisories), **zod 4.6.7** (zod 3 had a high-severity memory-exhaustion advisory relevant to parsing untrusted payloads in Phases 3/5). `npm audit --omit=dev` = 0 vulnerabilities. NOTE zod 4 `.default()` no longer re-parses its default, so object defaults that need inner defaults must use `.prefault()` (fixed for `theme`).
 - **DB tests** run on PGlite with a Supabase auth stub (roles anon/authenticated, `auth.uid()` from `request.jwt.claim.sub`).
 - Placeholder routes (Create Form, Responses, Templates) render an explicit "Not yet implemented — Phase N" page; disabled create buttons are labelled.
+
+
+## Phase 2 architecture
+- **One schema, many producers.** `src/schema/form.ts` is the only definition. The manual builder, future document import, future AI generation and the renderer all read and write this shape. The builder stores the draft after `FormSchema.parse`, and the database mirrors the critical invariants.
+- **Field registry** (`src/fields/`): `definitions.ts` is pure (no React) and holds defaults, config schemas, answer schemas and formatters. `ui/` holds React inputs and builder editors, keyed by the same `FieldType` through `Record<FieldType, …>`, so a missing type is a compile error. `validate.ts` adds deep validation and publish readiness.
+- **Builder state** (`features/builder/state.ts`): a pure reducer (`formReducer`) with a history wrapper for undo/redo. Typing into one field is coalesced into one undo step. Pure reducers make the structural rules (move, delete section, prune rules) testable without the DOM.
+- **Autosave** (`useAutosave`): debounce, one request in flight, confirmed-saved state only, conflict pause. It is independent of React Query so the UI never reports "saved" optimistically.
+- **Renderer** (`features/renderer/`): `logic.ts` is pure (visibility, next step, pages, validation of visible questions). `FormRenderer.tsx` is presentation only and is shared by the builder preview, the version preview and, in Phase 3, the public page.
+- **Theme** (`features/themes/`): `ThemeSchema` → `themeToCssVars()` → CSS custom properties consumed by `.sf-*` classes in `index.css`.
+- **Data access** (`features/forms/api.ts`): thin Supabase calls. Authorization is in RLS and database functions, not in the client. Publishing is an RPC.
+- **Routes**: `/forms/new`, `/forms/:id/edit`, `/forms/:id/preview`, `/templates`. Builder-side routes are lazy-loaded.
+- **Dependencies added:** `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`, `@radix-ui/react-dialog`, `@radix-ui/react-dropdown-menu`, `sonner`.

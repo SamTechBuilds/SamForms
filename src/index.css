@@ -17,3 +17,52 @@
   * { @apply border-border; }
   body { @apply bg-background text-foreground antialiased; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 }
+
+/* ------------------------------------------------------------------
+   Form renderer theme (driven by CSS variables from themeToCssVars()).
+   Shared by the builder preview now and the public renderer in Phase 3.
+   ------------------------------------------------------------------ */
+@layer components {
+  .sf-root { background: var(--sf-bg); color: var(--sf-fg); font-family: var(--sf-font); }
+  .sf-muted { color: var(--sf-muted); }
+  .sf-input {
+    width: 100%; background: transparent; color: var(--sf-fg); font: inherit; font-size: 1.05rem;
+    padding: 0.6rem 0.75rem; outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  .sf-input::placeholder { color: var(--sf-muted); opacity: .7; }
+  .sf-input:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--sf-primary) 30%, transparent); }
+  [data-input="underline"] .sf-input { border: 0; border-bottom: 2px solid color-mix(in srgb, var(--sf-primary) 45%, transparent); border-radius: 0; padding-left: 0; padding-right: 0; }
+  [data-input="underline"] .sf-input:focus-visible { border-bottom-color: var(--sf-primary); box-shadow: none; }
+  [data-input="outlined"] .sf-input { border: 1.5px solid color-mix(in srgb, var(--sf-fg) 25%, transparent); border-radius: var(--sf-radius); }
+  [data-input="outlined"] .sf-input:focus-visible { border-color: var(--sf-primary); }
+  [data-input="filled"] .sf-input { border: 1.5px solid transparent; background: color-mix(in srgb, var(--sf-fg) 7%, transparent); border-radius: var(--sf-radius); }
+  [data-input="filled"] .sf-input:focus-visible { border-color: var(--sf-primary); }
+  .sf-input[aria-invalid="true"] { border-color: #dc2626 !important; }
+
+  .sf-choice {
+    display: flex; align-items: center; gap: .6rem; width: 100%; text-align: left; padding: .55rem .8rem;
+    border: 1.5px solid color-mix(in srgb, var(--sf-primary) 40%, transparent); border-radius: var(--sf-radius);
+    background: color-mix(in srgb, var(--sf-primary) 6%, transparent); color: var(--sf-fg); transition: background .15s, border-color .15s;
+  }
+  .sf-choice:hover { background: color-mix(in srgb, var(--sf-primary) 14%, transparent); }
+  .sf-choice[aria-checked="true"], .sf-choice[aria-pressed="true"] { border-color: var(--sf-primary); background: color-mix(in srgb, var(--sf-primary) 20%, transparent); }
+  .sf-choice:focus-visible { outline: 2px solid var(--sf-primary); outline-offset: 2px; }
+  .sf-key { display: inline-flex; align-items: center; justify-content: center; min-width: 1.5rem; height: 1.5rem; font-size: .75rem; border: 1px solid var(--sf-primary); border-radius: 4px; }
+
+  .sf-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem; font-weight: 600; padding: .6rem 1.2rem;
+    border-radius: var(--sf-radius); border: 2px solid var(--sf-primary); transition: filter .15s, background .15s;
+  }
+  .sf-btn:focus-visible { outline: 2px solid var(--sf-primary); outline-offset: 2px; }
+  .sf-btn:disabled { opacity: .5; cursor: not-allowed; }
+  [data-button="solid"] .sf-btn { background: var(--sf-primary); color: var(--sf-on-primary); }
+  [data-button="solid"] .sf-btn:hover { filter: brightness(1.08); }
+  [data-button="outline"] .sf-btn { background: transparent; color: var(--sf-primary); }
+  [data-button="outline"] .sf-btn:hover { background: color-mix(in srgb, var(--sf-primary) 10%, transparent); }
+  [data-button="pill"] .sf-btn { background: var(--sf-primary); color: var(--sf-on-primary); border-radius: 9999px; }
+  .sf-btn-ghost { background: transparent !important; color: var(--sf-fg) !important; border-color: color-mix(in srgb, var(--sf-fg) 25%, transparent) !important; }
+
+  @keyframes sf-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .sf-animate-in { animation: sf-in .28s ease-out both; }
+  @media (prefers-reduced-motion: reduce) { .sf-animate-in { animation: none; } }
+}

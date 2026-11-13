@@ -1,8 +1,13 @@
-# Implementation Plan
-- **P0 Foundation** ✅ docs, canonical schema, condition engine, tests.
-- **P1 Auth+Dashboard** ✅ (code + tests done; needs your Supabase project to run live, see SETUP.md): Vite/React/Tailwind/shadcn scaffold, Supabase project + migrations (admin_users, forms, audit_logs, platform_settings), login/logout/recovery, guards, `is_admin()`, dashboard stats, forms list shell, RLS tests.
-- **P2 Builder:** form_versions + form_templates migrations, field registry, canvas/settings/preview, dnd-kit, sections/page breaks, themes, autosave, publish/duplicate/archive.
-- **P3 Public:** `submit-form` fn, submissions + files migrations, conversational + classic renderer, conditions, server validation, rate limit.
-- **P4 Responses:** list/filter/search/sort, detail, signed file URLs, CSV/XLSX export, basic analytics.
-- **P5 AI:** extractors (Mammoth, PDF.js, SheetJS, Papa), manual import UI, provider adapter, doc→form, prompt→form, review screen, ai_generation_jobs.
-- **P6 Finalize:** email notifications, security review, perf, a11y, Playwright E2E, deploy docs.
+# Implementation plan
+
+| Phase | Scope | Status |
+|---|---|---|
+| 0 | Foundation: repo, docs, canonical schema, security model, test plan | Done |
+| 1 | Auth, allowlisted admin, dashboard shell, migration 0001 (RLS, audit) | Done (live Supabase verification pending credentials) |
+| 2 | **Form builder**: migration 0002 (immutable versions, templates, publish RPC), 27-type field registry, three-panel builder with drag-and-drop, sections and page breaks, conditional-logic editor, themes, autosave, undo/redo, publish/unpublish/archive/duplicate/rename/delete, version history, templates, live preview | **Done** (see STATE.md for verification limits) |
+| 3 | Public renderer route, submission RPC/edge function with server-side validation, rate limiting, private file upload | Next |
+| 4 | Response listing, detail, private file access, CSV and Excel export, analytics | Planned |
+| 5 | AI: document extraction (DOCX, PDF, XLSX, CSV, TXT), OpenRouter adapter, document-to-form, prompt-to-form, review UI | Planned (Create Form shows these as not yet implemented) |
+| 6 | Email notifications, security review, performance (bundle size), accessibility, E2E tests, deployment docs | Planned |
+
+Phase 2 deliberately does not include public form pages, submissions, exports or AI. Those are Phases 3–5.

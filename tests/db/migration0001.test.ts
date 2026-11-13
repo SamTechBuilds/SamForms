@@ -131,10 +131,10 @@ describe("constraints", () => {
 });
 
 describe("RLS coverage", () => {
-  it("every public table has RLS enabled", async () => {
+  it("every public table has RLS enabled (count grows as later migrations add tables)", async () => {
     const r = await db.query<{ relname: string; relrowsecurity: boolean }>(
       `select c.relname, c.relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r'`);
-    expect(r.rows.length).toBe(4);
+    expect(r.rows.map(x => x.relname).sort()).toEqual(["admin_users", "audit_logs", "form_templates", "form_versions", "forms", "platform_settings"]);
     expect(r.rows.every(x => x.relrowsecurity)).toBe(true);
   });
 });
