@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Check, Star, Upload, X } from "lucide-react";
 import type { Question } from "@/schema/form";
 import type { FieldConfig } from "../types";
+import { FileUploaderContext } from "../uploader";
 
 export interface FieldInputProps {
   question: Question;
@@ -214,19 +215,42 @@ function FilesInput({ p, accept }: { p: FieldInputProps; accept: string }) {
   const files = Array.isArray(p.value) ? (p.value as FileRef[]) : [];
   const max = p.question.validation.maxFiles ?? 1;
   const ref = useRef<HTMLInputElement>(null);
+  const upload = useContext(FileUploaderContext);
+  const [busy, setBusy] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  async function take(picked: File[]) {
+    setUploadError(null);
+    const room = Math.max(0, max - files.length);
+    const chosen = picked.slice(0, room);
+    if (chosen.length === 0) return;
+    if (!upload) {
+      // Builder preview: record metadata only so validation can run. Nothing leaves the browser.
+      const local = chosen.map((f, i) => ({ id: `local-${Date.now()}-${i}`, name: f.name, size: f.size, mimeType: f.type || "application/octet-stream" }));
+      p.onChange([...files, ...local]);
+      return;
+    }
+    // Public form: each file is reserved and stored on the server before it is referenced.
+    setBusy(true);
+    try {
+      const done: FileRef[] = [];
+      for (const f of chosen) done.push(await upload(p.question.id, f));
+      p.onChange([...files, ...done]);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "The file could not be uploaded.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="space-y-2">
       <input ref={ref} type="file" className="sr-only" accept={accept} multiple={max > 1} {...aria(p)}
-        onChange={e => {
-          // Preview mode: record file metadata only so validation can run. Phase 3 uploads via signed URLs.
-          const picked = Array.from(e.target.files ?? []).map((f, i) => ({ id: `local-${Date.now()}-${i}`, name: f.name, size: f.size, mimeType: f.type || "application/octet-stream" }));
-          const n = [...files, ...picked];
-          p.onChange(n.length ? n : undefined);
-          e.target.value = "";
-        }} />
-      <button type="button" className="sf-choice justify-center border-dashed py-6" disabled={p.disabled || files.length >= max} onClick={() => ref.current?.click()}>
-        <Upload className="h-5 w-5" aria-hidden="true" /> {files.length >= max ? "Maximum files selected" : "Choose file"}
+        onChange={e => { const picked = Array.from(e.target.files ?? []); e.target.value = ""; void take(picked); }} />
+      <button type="button" className="sf-choice justify-center border-dashed py-6" disabled={p.disabled || busy || files.length >= max} onClick={() => ref.current?.click()}>
+        <Upload className="h-5 w-5" aria-hidden="true" /> {busy ? "Uploading…" : files.length >= max ? "Maximum files selected" : "Choose file"}
       </button>
+      {uploadError && <p role="alert" className="text-sm text-red-600">{uploadError}</p>}
       <p className="sf-muted text-xs">Up to {max} file{max > 1 ? "s" : ""}, {p.question.validation.maxFileSizeMb ?? 10} MB each.</p>
       {files.length > 0 && (
         <ul className="space-y-1 text-sm">

@@ -39,3 +39,9 @@ Netlify (SPA redirect, env vars) + Supabase (migrations via CLI, secrets via `su
 - **Data access** (`features/forms/api.ts`): thin Supabase calls. Authorization is in RLS and database functions, not in the client. Publishing is an RPC.
 - **Routes**: `/forms/new`, `/forms/:id/edit`, `/forms/:id/preview`, `/templates`. Builder-side routes are lazy-loaded.
 - **Dependencies added:** `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`, `@radix-ui/react-dialog`, `@radix-ui/react-dropdown-menu`, `sonner`.
+
+## Phase 3: public path
+- `/f/:slug` (`PublicFormPage`) is outside `RequireAdmin`. It loads the published form with `get_public_form`, renders it with the same `FormRenderer` as the preview, and submits with `submit_response`.
+- Submission flow: renderer → `effectiveAnswers` (client-side, for the respondent's view) → `submit_response` → server validation and visibility → insert. Server errors come back as `SubmissionRejected`, and the renderer shows them next to their questions.
+- Upload flow: `FilesInput` → `FileUploaderContext` → `request_upload` (reservation) → Storage upload to the reserved path → the file ID is stored in the answer, and the server confirms it on submit.
+- Server-side logic lives in Postgres because Edge Functions could not be run in this environment. The rule engine and validators exist in both SQL and TypeScript, tested for parity.

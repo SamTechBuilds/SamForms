@@ -10,6 +10,7 @@ import { OverviewPage } from "@/pages/OverviewPage";
 import { FormsPage } from "@/pages/FormsPage";
 import { SettingsPage } from "@/pages/SettingsPage";
 import { ComingSoonPage } from "@/pages/ComingSoonPage";
+import { PublicFormPage } from "@/pages/PublicFormPage";
 const CreateFormPage = lazy(() => import("@/pages/CreateFormPage").then(m => ({ default: m.CreateFormPage })));
 const BuilderPage = lazy(() => import("@/pages/BuilderPage").then(m => ({ default: m.BuilderPage })));
 const PreviewPage = lazy(() => import("@/pages/PreviewPage").then(m => ({ default: m.PreviewPage })));
@@ -25,6 +26,8 @@ export function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
+      {/* Public respondent route: outside RequireAdmin on purpose. */}
+      <Route path="/f/:slug" element={<PublicFormPage />} />
       <Route element={<RequireAdmin />}>
         <Route element={<AppLayout />}>
           <Route index element={<OverviewPage />} />

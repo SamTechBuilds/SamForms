@@ -7,6 +7,14 @@ import { fieldUi, ContentBlock } from "@/fields/ui";
 import { isAnswered } from "@/fields/answers";
 import { themeToCssVars } from "@/features/themes/theme";
 import { buildPages, effectiveAnswers, isVisible, nextPage, nextStep, orderedQuestions, validateVisible } from "./logic";
+import { SubmissionRejected } from "./errors";
+
+/** Only http(s) links are rendered; anything else (e.g. javascript:) is dropped. */
+export function safeHttpUrl(u: string | undefined): string | null {
+  if (!u) return null;
+  try { const parsed = new URL(u); return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : null; }
+  catch { return null; }
+}
 
 export interface FormRendererProps {
   form: FormDefinition;
@@ -83,7 +91,22 @@ export function FormRenderer({ form, onSubmit, previewNotice, className }: FormR
   async function finish() {
     setSubmitting(true); setSubmitError(null);
     try { await onSubmit?.(effectiveAnswers(form, answers)); setPhase("done"); }
-    catch (e) { setSubmitError(e instanceof Error ? e.message : "Submission failed. Please try again."); }
+    catch (e) {
+      if (e instanceof SubmissionRejected) {
+        // The server found problems: show them next to their questions and bring the first one into view.
+        setErrors(e.errors);
+        setSubmitError("Some answers need attention. Check the highlighted question.");
+        if (form.layout === "classic") {
+          const p = pages.findIndex(pg => form.questions.some(x => e.errors[x.id] && pg.includes(x.sectionId)));
+          if (p >= 0) setPage(p);
+        } else {
+          const idx = ordered.findIndex(x => e.errors[x.id]);
+          if (idx >= 0) setStep(idx);
+        }
+      } else {
+        setSubmitError(e instanceof Error ? e.message : "Submission failed. Please try again.");
+      }
+    }
     finally { setSubmitting(false); }
   }
 
@@ -114,8 +137,8 @@ export function FormRenderer({ form, onSubmit, previewNotice, className }: FormR
         <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full" style={{ background: "var(--sf-primary)", color: "var(--sf-on-primary)" }}><Check className="h-7 w-7" aria-hidden="true" /></div>
         <h1 className="text-3xl font-semibold">{c.title}</h1>
         {c.message && <p className="sf-muted mx-auto mt-4 max-w-lg whitespace-pre-line">{c.message}</p>}
-        {c.redirectUrl && <p className="sf-muted mt-4 text-sm">Respondents will be redirected to {c.redirectUrl}{previewNotice ? " (not in preview)" : ""}.</p>}
-        {c.buttonLabel && c.redirectUrl && !previewNotice && <a className="sf-btn mt-6" href={c.redirectUrl} rel="noopener noreferrer">{c.buttonLabel}</a>}
+        {previewNotice && c.redirectUrl && <p className="sf-muted mt-4 text-sm">Respondents will be sent to {c.redirectUrl}. Links are not followed in preview.</p>}
+        {c.buttonLabel && safeHttpUrl(c.redirectUrl) && !previewNotice && <a className="sf-btn mt-6" href={safeHttpUrl(c.redirectUrl)!} rel="noopener noreferrer">{c.buttonLabel}</a>}
         {previewNotice && <button type="button" className="sf-btn sf-btn-ghost mt-8" onClick={restart}><RotateCcw className="h-4 w-4" aria-hidden="true" /> Restart preview</button>}
       </div>,
     );

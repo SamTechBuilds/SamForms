@@ -20,3 +20,6 @@ Dashboard → Authentication → Users → Add user (email + strong password, au
 OpenRouter API key + model, email provider key, Netlify site. All server-side secrets via `npx supabase secrets set`.
 ## Local DB without Docker
 `npm run test:db` runs the migrations against an in-process Postgres (PGlite) with an emulated Supabase auth stub. This is *not* a substitute for testing on real Supabase (see STATE.md known issues).
+
+## Phase 3: public forms and storage
+Apply migrations 0001–0003 to your Supabase project (`npx supabase db push`, or paste the SQL in order). Migration 0003 creates the private `submissions` bucket and its policies automatically when the `storage` schema exists. Confirm in Storage that `submissions` is private (not public). Public links look like `https://<your-site>/f/<slug>`.

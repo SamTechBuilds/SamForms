@@ -23,3 +23,8 @@ Tools: Vitest (unit), Supabase local + SQL/pgTAP-style RLS tests (integration), 
 ## Phase 2 execution record
 Executed in the sandbox: `tsc --noEmit`, `eslint .`, `vitest run` (15 files, 178 tests), `vite build`.
 Not executed: Playwright E2E, axe accessibility scan, real-browser visual or mobile checks, tests against a live Supabase project.
+
+## Phase 3 coverage
+- DB (`tests/db/migration0003.test.ts`, 14 tests): anon denied on responses, files, reservations and counters; public form strips review notes; unpublished forms rejected; admin and intruder read; immutability; validation errors without inserts; unknown keys; hidden answers dropped; rate limit; version pinning after republish; upload refusals; sanitised paths; server-side file metadata; one-use reservations; duplicate reservation in one submission; SQL-vs-TypeScript parity over 40 cases.
+- Client (`src/features/renderer/submit.test.tsx`): server rejection shown next to the question with focus moved to it; plain failure text keeps answers; only http(s) completion links render.
+- Not yet covered: browser E2E of the public form, real Storage uploads, and the rate limit behind the real gateway.

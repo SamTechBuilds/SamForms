@@ -28,3 +28,12 @@ Rate limiting without Redis relies on DB counters; signature/image fields need s
 - **Input limits** on the server and in the schema: text length, option counts, form size (1 MB), theme values, redirect and image URLs (https only for images), data URLs for signatures (PNG only, ~300 KB).
 - **Client-side redirect URL** must be http(s). The completion redirect and image URLs are checked by the schema before save.
 - **Known gap:** the publish RPC and template policies have been tested on PGlite with an emulated `auth.uid()`, not on real Supabase Auth. Re-run on a linked project.
+
+## Phase 3 additions
+- **Respondents never touch tables.** Every public operation is a narrow `SECURITY DEFINER` function with `search_path = ''`. Clients get execute only on the four public functions.
+- **Server validation is authoritative.** `submit_response` re-validates everything against the published version it reads itself. The client's payload is never trusted for file names, sizes or types. Unknown answer keys are rejected.
+- **Hidden answers are dropped** server-side, so respondents cannot inject values for questions the form hides.
+- **Upload controls:** reservation required per file; deny list for browser-executable and script types; per-question allow lists and size limits enforced at reservation and again at submission; Storage object metadata must match the reservation; objects are private, with admin-only read.
+- **Rate limits** (10 submissions and 60 reservations per 10 minutes per form and network hash). The raw IP is never stored, only a SHA-256 hash scoped to the form.
+- **Internal review notes** (`aiNotes`) are removed from the public schema.
+- **Known gaps:** rate limit trusts `x-forwarded-for` (see STATE.md); no malware scanning; orphaned objects are not yet cleaned up; signatures are inline, not in private storage.

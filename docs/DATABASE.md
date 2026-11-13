@@ -42,3 +42,12 @@ Decisions:
 - **`validate_form_schema()`** is a structural validator (version, title, unique ids, known types, section and rule references, operators, choice options, 1 MB cap). `tests/db/migration0002.test.ts` checks that it agrees with the Zod schema on valid and invalid documents.
 - **Templates**: system rows have `created_by` null and cannot be inserted, updated or deleted by clients. Audit runs for admin-created templates only.
 - Migration 0001's RLS test now lists the expected six protected tables.
+
+## Phase 3 (migration 0003)
+- `submissions`: immutable responses, pinned to `(form_id, form_version_id)`. Admin select and delete only. Trigger blocks updates.
+- `submission_files`: one row per accepted file, with metadata taken from the server-side reservation.
+- `pending_uploads`: upload reservations (one hour), each bound to a form, question, storage path, MIME type and size. Consumed atomically on submission. No client access.
+- `rate_limit_events`: fixed-window counters keyed by operation and hashed network address. No client access. Old rows are pruned at random (about 1%).
+- Public functions (anon may execute): `get_public_form`, `request_upload`, `submit_response`, `pending_upload_is_valid`. Internal functions (`validate_submission`, `consume_rate_limit`, `sf_caller_hash`, and the `sf_*` rule helpers) are revoked from clients.
+- Storage (Supabase only): private bucket `submissions`, 10 MB object limit. Anon insert is allowed only for a live reservation path. Admin read is allowed.
+- Parity: `sf_*` rule and validator functions mirror `src/schema/conditions.ts` and `src/fields/answers.ts`. Keep them in step. `tests/db/migration0003.test.ts` runs a 40-case corpus through both.
