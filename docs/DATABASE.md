@@ -18,3 +18,13 @@ Indexes: forms(owner_id,status), forms(slug), form_versions(form_id,version desc
 - submissions / submission_files / admin_users / audit_logs: zero anon policies.
 ## Retention
 Respondent files and submissions retained until admin deletes; AI source docs not stored; ai_generation_jobs input_meta only; configurable purge via platform_settings (Phase 6).
+
+## Phase 1 status — migration `20261113000001_admin_forms_audit_settings.sql`
+Implemented: admin_users, forms, audit_logs, platform_settings (+ helpers `set_updated_at`, `is_admin()`, `log_audit()`, `audit_forms_changes` trigger).
+Decisions beyond the plan:
+- `admin_users`: one-super-admin enforced by partial unique index; email must be lowercase. Admins are provisioned **out-of-band** (SETUP.md step 5): there is deliberately no client INSERT/UPDATE/DELETE policy or grant. Clients may read only their own row.
+- `forms`: `slug` format/length check; `status` check; `published ⇒ published_version_id not null` and `archived ⇔ archived_at not null` invariants; `draft_schema` must be a JSON object. `published_version_id` has **no FK yet** — Phase 2 adds it with `form_versions`. The full canonical-schema validation of `draft_schema` happens in app code (Zod) and, from Phase 2, in the publish path; the DB only guarantees "JSON object".
+- `owner_id → admin_users ON DELETE RESTRICT`; `audit_logs.actor_id → admin_users ON DELETE RESTRICT` (deactivate admins, don't delete them).
+- `audit_logs` is append-only (row triggers block UPDATE/DELETE, statement trigger blocks TRUNCATE); clients cannot INSERT directly: only `log_audit()` (actor taken from JWT) and the forms trigger write.
+- `platform_settings`: seeded non-secret defaults `retention.ai_source_documents_days=0`, `retention.submissions_days=null`. No DELETE grant.
+- Privileges: `anon` has no table or function privileges; `authenticated` gets the minimum, RLS on top.

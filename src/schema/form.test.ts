@@ -17,6 +17,13 @@ describe("FormSchema", () => {
     expect(f.layout).toBe("conversational");
     expect(f.questions[0]!.required).toBe(false);
   });
+  it("fills the full theme defaults when theme is omitted (zod 4 default semantics regression)", () => {
+    const f = FormSchema.parse(base());
+    expect(f.theme).toMatchObject({ primary: "#2563eb", background: "#ffffff", fontFamily: "inter", borderRadius: 8, progress: "bar" });
+    expect(f.completionScreen.title).toBe("Thank you!");
+    expect(f.questions[0]!.validation).toEqual({});
+    expect(f.questions[0]!.rules).toEqual([]);
+  });
   it("rejects duplicate ids, unknown sections and dangling rule refs", () => {
     const b = base(); b.questions[1]!.id = "q1";
     expect(FormSchema.safeParse(b).success).toBe(false);

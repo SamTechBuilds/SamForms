@@ -111,7 +111,7 @@ export const FormSchema = z.object({
   layout: z.enum(["conversational","classic"]).default("conversational"),
   sections: z.array(SectionSchema).min(1),
   questions: z.array(QuestionSchema).max(500),
-  theme: ThemeSchema.default({} as never),
+  theme: ThemeSchema.prefault({}),
   welcomeScreen: ScreenSchema.optional(),
   completionScreen: ScreenSchema.default({ title: "Thank you!" }),
 }).superRefine((f, ctx) => {

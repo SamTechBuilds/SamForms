@@ -4,7 +4,8 @@ Tools: Vitest (unit), Supabase local + SQL/pgTAP-style RLS tests (integration), 
 |---|---|---|
 | Schema validity/defaults/cross-refs, malformed AI output | unit | 0 ✅ |
 | Condition engine (all operators, AND/OR) | unit | 0 ✅ |
-| Auth, unauthorized access, allowlist, RLS on every table | integration | 1+ |
+| Auth guard/provider/login UI (mocked Supabase), RLS + constraints for 0001 tables (PGlite) | unit+integration | 1 ✅ |
+| Auth against a real Supabase project, RLS on later tables | integration | 1 (pending credentials) / 2+ |
 | Builder CRUD/reorder/duplicate/type change, autosave | unit+E2E | 2 |
 | Publish immutability & versioning | integration | 2 |
 | Public access, conditional display, server validation, uploads, rate limit | integration+E2E | 3 |
