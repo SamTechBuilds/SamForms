@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FileUp, Sparkles, LayoutTemplate } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { createForm, createFromTemplate, useTemplates } from "@/features/forms/api";
 import { PageHeader } from "./PageHeader";
 
-/** Route: /forms/new — real: blank form and templates. Document import and AI are marked not yet implemented. */
+/** Route: /forms/new — blank form, templates, and AI or document-based drafts. */
 export function CreateFormPage() {
   const navigate = useNavigate();
   const templates = useTemplates();
@@ -67,11 +66,11 @@ export function CreateFormPage() {
           </CardContent>
         </Card>
 
-        <Card className="xl:col-span-3 border-dashed">
-          <CardHeader><CardTitle className="flex flex-wrap items-center gap-2">Other ways to start <Badge variant="warning">Not yet implemented</Badge></CardTitle><CardDescription>These need the AI and document-extraction pipeline (Phase 5). They are shown so you know they're planned, not because they work today.</CardDescription></CardHeader>
+        <Card className="xl:col-span-3">
+          <CardHeader><CardTitle>Other ways to start</CardTitle><CardDescription>Generate a draft from a document or a description. Every draft is reviewed by you before it is saved.</CardDescription></CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2">
-            <div className="flex items-start gap-3 rounded-md border p-3 opacity-70"><FileUp className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" /><div><p className="font-medium">Import a document</p><p className="text-xs text-muted-foreground">DOCX, PDF, XLSX, CSV or TXT → questions to review. Planned: Phase 5.</p></div></div>
-            <div className="flex items-start gap-3 rounded-md border p-3 opacity-70"><Sparkles className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" /><div><p className="font-medium">Generate with AI</p><p className="text-xs text-muted-foreground">From a document or a description. Planned: Phase 5.</p></div></div>
+            <Link to="/forms/new/ai?source=document" className="flex items-start gap-3 rounded-md border p-3 hover:bg-accent"><FileUp className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" /><div><p className="font-medium">Import a document</p><p className="text-xs text-muted-foreground">DOCX, PDF, XLSX, CSV, TXT or Markdown become questions you review.</p></div></Link>
+            <Link to="/forms/new/ai" className="flex items-start gap-3 rounded-md border p-3 hover:bg-accent"><Sparkles className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" /><div><p className="font-medium">Generate with AI</p><p className="text-xs text-muted-foreground">Describe the form in plain language and review the draft.</p></div></Link>
           </CardContent>
         </Card>
       </div>

@@ -26,3 +26,7 @@ export interface AuditLogRow {
   id: string; actor_id: string | null; action: string; entity_type: string | null;
   entity_id: string | null; metadata: Record<string, unknown>; created_at: string;
 }
+
+export interface AiUsageRow { id: number; user_id: string; created_at: string }
+export interface NotificationSettingsRecord { form_id: string; enabled: boolean; recipient: string | null }
+export type NotificationStatus = "pending" | "sent" | "failed";

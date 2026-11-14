@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 vi.mock("@/features/forms/api", () => ({ useForm: () => ({ data: { title: "Intake" } }) }));
+// Notification settings have their own tests; here only the responses page itself is under test.
+vi.mock("@/features/notifications/NotificationSettingsCard", () => ({ NotificationSettingsCard: () => null }));
+vi.mock("@/features/auth/auth-context", () => ({ useAuth: () => ({ state: { status: "loading" } }) }));
 vi.mock("@/features/responses/api", async (orig) => {
   const actual = await orig<typeof import("@/features/responses/api")>();
   return {

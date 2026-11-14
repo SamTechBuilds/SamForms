@@ -13,4 +13,6 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Frame-Options = "DENY"
-    # Content-Security-Policy is finalised in Phase 6 (needs PDF.js worker + Supabase origins).
+    # Scripts and workers are same-origin only (PDF.js worker is a bundled asset). Styles allow inline
+    # attributes because Radix and Tailwind set them at runtime. Connections are limited to Supabase.
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; worker-src 'self' blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; img-src 'self' data: blob:; font-src 'self' data:; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'"

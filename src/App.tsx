@@ -12,6 +12,7 @@ import { SettingsPage } from "@/pages/SettingsPage";
 import { ResponsesPage } from "@/pages/ResponsesPage";
 import { ResponseDetailPage } from "@/pages/ResponseDetailPage";
 import { ResponsesIndexPage } from "@/pages/ResponsesIndexPage";
+import { AiCreatePage } from "@/pages/AiCreatePage";
 import { PublicFormPage } from "@/pages/PublicFormPage";
 const CreateFormPage = lazy(() => import("@/pages/CreateFormPage").then(m => ({ default: m.CreateFormPage })));
 const BuilderPage = lazy(() => import("@/pages/BuilderPage").then(m => ({ default: m.BuilderPage })));
@@ -35,6 +36,7 @@ export function App() {
           <Route index element={<OverviewPage />} />
           <Route path="forms" element={<FormsPage />} />
           <Route path="forms/new" element={<CreateFormPage />} />
+          <Route path="forms/new/ai" element={<AiCreatePage />} />
           <Route path="forms/:id/edit" element={<BuilderPage />} />
           <Route path="forms/:id/preview" element={<PreviewPage />} />
           <Route path="forms/:id/responses" element={<ResponsesPage />} />

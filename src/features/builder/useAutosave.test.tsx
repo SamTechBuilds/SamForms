@@ -14,7 +14,7 @@ describe("useAutosave", () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
-  function setup(save: ReturnType<typeof vi.fn>, fetchRevision = vi.fn(async () => 7)) {
+  function setup(save: Parameters<typeof useAutosave>[0]["save"], fetchRevision = vi.fn(async () => 7)) {
     const initial = blankForm("Draft");
     const hook = renderHook(({ schema }: { schema: FormDefinition }) =>
       useAutosave({ schema, initialRevision: 0, save, fetchRevision, delayMs: 1000 }), { initialProps: { schema: initial } });

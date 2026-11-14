@@ -16,11 +16,15 @@ import {
 } from "@/features/responses/api";
 import { buildExport, download, exportColumns, toCsv, toXlsx } from "@/features/responses/export";
 import { formatAnswer } from "@/fields/answers";
+import { NotificationSettingsCard } from "@/features/notifications/NotificationSettingsCard";
+import { useAuth } from "@/features/auth/auth-context";
 import { timeAgo } from "@/lib/format";
 import { PageHeader } from "./PageHeader";
 
 export function ResponsesPage() {
   const { id = "" } = useParams();
+  const auth = useAuth();
+  const adminEmail = auth.state.status === "authorized" ? auth.state.admin.email : "";
   const form = useForm(id);
   const versions = useVersionSchemas(id);
   const stats = useResponseStats(id);
@@ -81,6 +85,10 @@ export function ResponsesPage() {
           </div>
         }
       />
+
+      <div className="mb-8">
+        <NotificationSettingsCard formId={id} defaultRecipient={adminEmail} />
+      </div>
 
       {stats.isPending ? <Skeleton className="mb-6 h-32 w-full" /> : stats.isError ? (
         <p role="alert" className="mb-6 text-sm text-destructive">{stats.error.message}</p>
