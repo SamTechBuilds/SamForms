@@ -79,6 +79,7 @@ function RowActions({ f }: { f: FormListRow }) {
         <DropdownMenuContent>
           <DropdownMenuItem onSelect={() => navigate(`/forms/${f.id}/edit`)}>Edit</DropdownMenuItem>
           <DropdownMenuItem onSelect={() => navigate(`/forms/${f.id}/preview`)}>Preview</DropdownMenuItem>
+          {everPublished && <DropdownMenuItem onSelect={() => navigate(`/forms/${f.id}/responses`)}>Responses</DropdownMenuItem>}
           <DropdownMenuItem onSelect={() => void copyLink()}>Copy public link</DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setRenaming(true)}>Rename</DropdownMenuItem>
           <DropdownMenuItem onSelect={() => void run("Form duplicated as a new draft", () => duplicateForm(f.id))}>Duplicate</DropdownMenuItem>

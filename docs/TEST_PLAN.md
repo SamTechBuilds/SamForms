@@ -28,3 +28,9 @@ Not executed: Playwright E2E, axe accessibility scan, real-browser visual or mob
 - DB (`tests/db/migration0003.test.ts`, 14 tests): anon denied on responses, files, reservations and counters; public form strips review notes; unpublished forms rejected; admin and intruder read; immutability; validation errors without inserts; unknown keys; hidden answers dropped; rate limit; version pinning after republish; upload refusals; sanitised paths; server-side file metadata; one-use reservations; duplicate reservation in one submission; SQL-vs-TypeScript parity over 40 cases.
 - Client (`src/features/renderer/submit.test.tsx`): server rejection shown next to the question with focus moved to it; plain failure text keeps answers; only http(s) completion links render.
 - Not yet covered: browser E2E of the public form, real Storage uploads, and the rate limit behind the real gateway.
+
+## Phase 4 coverage
+- DB (`tests/db/migration0004.test.ts`): access rules for each new function; statistics (choice counts, multiple-choice counts, rating average and range, unanswered values skipped, per-day series); time-zone and form validation; deleting a response with a file (paths returned and queued, rows removed, cleanup completes); unknown responses.
+- Export (`src/features/responses/export.test.ts`): column ordering across versions, file names in cells, CSV quoting, formula neutralising (including negative numbers), Excel round-trip.
+- Page (`src/pages/ResponsesPage.test.tsx`): statistics, row preview and delete control render with mocked data.
+- Not yet covered: browser E2E for filters, paging, downloads and signed links; Excel opened in a desktop application; exports of large response sets.

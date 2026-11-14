@@ -51,3 +51,10 @@ Decisions:
 - Public functions (anon may execute): `get_public_form`, `request_upload`, `submit_response`, `pending_upload_is_valid`. Internal functions (`validate_submission`, `consume_rate_limit`, `sf_caller_hash`, and the `sf_*` rule helpers) are revoked from clients.
 - Storage (Supabase only): private bucket `submissions`, 10 MB object limit. Anon insert is allowed only for a live reservation path. Admin read is allowed.
 - Parity: `sf_*` rule and validator functions mirror `src/schema/conditions.ts` and `src/fields/answers.ts`. Keep them in step. `tests/db/migration0003.test.ts` runs a 40-case corpus through both.
+
+## Phase 4 (migration 0004)
+- `response_stats(form_id, tz)`: admin-only aggregates. Counts are computed from `submissions` at query time; nothing is cached.
+- `delete_submission(id)`: admin-only. Removes the response, cascades its file rows, and writes their storage paths to `storage_cleanup`. Returns the paths.
+- `finish_storage_cleanup(paths)`: admin-only. Removes queue rows after the storage removal succeeds.
+- `storage_cleanup`: queue of private-bucket objects still to be removed. RLS on, no client grants.
+- Storage: admins may delete objects in the `submissions` bucket (policy `sf_submissions_admin_delete`, guarded for Supabase).

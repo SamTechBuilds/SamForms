@@ -37,3 +37,11 @@ Rate limiting without Redis relies on DB counters; signature/image fields need s
 - **Rate limits** (10 submissions and 60 reservations per 10 minutes per form and network hash). The raw IP is never stored, only a SHA-256 hash scoped to the form.
 - **Internal review notes** (`aiNotes`) are removed from the public schema.
 - **Known gaps:** rate limit trusts `x-forwarded-for` (see STATE.md); no malware scanning; orphaned objects are not yet cleaned up; signatures are inline, not in private storage.
+
+## Phase 4 additions
+- **Admin-only data.** `response_stats`, `delete_submission` and `finish_storage_cleanup` check `is_admin()` inside the function and are executable by `authenticated` only. Anon and non-admin users are rejected.
+- **Private files stay private.** Admins open a file through a signed link that lasts 5 minutes. Nothing is public.
+- **Deletion is atomic and tracked.** File paths are queued in the same transaction that deletes the response, so a failed storage call does not leave untracked objects.
+- **CSV formula injection.** Cells that a spreadsheet could evaluate as a formula are prefixed with an apostrophe. Excel cells are written as plain strings.
+- **Dependency.** `exceljs` is used for export only (never to parse untrusted files). `uuid` is overridden to ^11.1.1 to clear the moderate advisory.
+- **Known gaps:** no audit log entries for response views or exports yet; no malware scanning on downloads.

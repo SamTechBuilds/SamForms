@@ -9,7 +9,9 @@ import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
 import { OverviewPage } from "@/pages/OverviewPage";
 import { FormsPage } from "@/pages/FormsPage";
 import { SettingsPage } from "@/pages/SettingsPage";
-import { ComingSoonPage } from "@/pages/ComingSoonPage";
+import { ResponsesPage } from "@/pages/ResponsesPage";
+import { ResponseDetailPage } from "@/pages/ResponseDetailPage";
+import { ResponsesIndexPage } from "@/pages/ResponsesIndexPage";
 import { PublicFormPage } from "@/pages/PublicFormPage";
 const CreateFormPage = lazy(() => import("@/pages/CreateFormPage").then(m => ({ default: m.CreateFormPage })));
 const BuilderPage = lazy(() => import("@/pages/BuilderPage").then(m => ({ default: m.BuilderPage })));
@@ -35,7 +37,9 @@ export function App() {
           <Route path="forms/new" element={<CreateFormPage />} />
           <Route path="forms/:id/edit" element={<BuilderPage />} />
           <Route path="forms/:id/preview" element={<PreviewPage />} />
-          <Route path="responses" element={<ComingSoonPage title="Responses" phase={4} description="Browse, search and export submissions. Requires public forms (Phase 3) and response management (Phase 4)." />} />
+          <Route path="forms/:id/responses" element={<ResponsesPage />} />
+          <Route path="forms/:id/responses/:sid" element={<ResponseDetailPage />} />
+          <Route path="responses" element={<ResponsesIndexPage />} />
           <Route path="templates" element={<TemplatesPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFoundPage />} />

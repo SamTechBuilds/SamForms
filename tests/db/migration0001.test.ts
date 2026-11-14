@@ -136,7 +136,7 @@ describe("RLS coverage", () => {
       `select c.relname, c.relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r'`);
     expect(r.rows.map(x => x.relname).sort()).toEqual([
       "admin_users", "audit_logs", "form_templates", "form_versions", "forms", "pending_uploads",
-      "platform_settings", "rate_limit_events", "submission_files", "submissions",
+      "platform_settings", "rate_limit_events", "storage_cleanup", "submission_files", "submissions",
     ]);
     expect(r.rows.every(x => x.relrowsecurity)).toBe(true);
   });
