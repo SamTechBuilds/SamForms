@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: { alias: { "@": path.resolve(__dirname, "src") } },
   test: {
     include: ["src/**/*.test.{ts,tsx}", "tests/**/*.test.{ts,tsx}"],
+    exclude: ["tests/deno/**", "node_modules/**", "dist/**"],
     setupFiles: ["./tests/setup.ts"],
     testTimeout: 30000,
   },

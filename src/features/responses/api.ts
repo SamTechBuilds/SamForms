@@ -125,3 +125,53 @@ export async function createFileUrl(path: string): Promise<string> {
   if (error || !data?.signedUrl) throw new Error("The file could not be opened.");
   return data.signedUrl;
 }
+
+export interface SubmissionOverview {
+  total: number;
+  /** Count per local calendar day for the last `days` days, oldest first. */
+  daily: { date: string; count: number }[];
+  recent: { id: string; form_id: string; submitted_at: string; answered: number }[];
+}
+
+/** Dashboard data across every form: total, a daily series and the latest responses. */
+export function useSubmissionOverview(days = 14) {
+  return useQuery({
+    queryKey: ["submissions", "overview", days],
+    queryFn: async (): Promise<SubmissionOverview> => {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - (days - 1));
+      const [totalRes, windowRes, recentRes] = await Promise.all([
+        supabase.from("submissions").select("id", { count: "exact", head: true }),
+        supabase.from("submissions").select("submitted_at").gte("submitted_at", start.toISOString()).order("submitted_at", { ascending: true }).range(0, 9999),
+        supabase.from("submissions").select("id, form_id, submitted_at, answers").order("submitted_at", { ascending: false }).limit(6),
+      ]);
+      for (const r of [totalRes, windowRes, recentRes]) if (r.error) throw errorMessage(r.error);
+
+      const buckets = new Map<string, number>();
+      for (let i = 0; i < days; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        buckets.set(localDay(d), 0);
+      }
+      for (const row of (windowRes.data ?? []) as { submitted_at: string }[]) {
+        const key = localDay(new Date(row.submitted_at));
+        if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + 1);
+      }
+      const recent = ((recentRes.data ?? []) as { id: string; form_id: string; submitted_at: string; answers: Record<string, unknown> }[])
+        .map(r => ({ id: r.id, form_id: r.form_id, submitted_at: r.submitted_at, answered: Object.keys(r.answers ?? {}).length }));
+      return {
+        total: totalRes.count ?? 0,
+        daily: [...buckets].map(([date, count]) => ({ date, count })),
+        recent,
+      };
+    },
+  });
+}
+
+function localDay(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}

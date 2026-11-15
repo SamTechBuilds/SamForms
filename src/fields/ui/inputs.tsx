@@ -277,7 +277,7 @@ export function SignatureInput(p: FieldInputProps) {
   return (
     <div className="space-y-2">
       <canvas ref={canvas} width={600} height={180} id={p.inputId} aria-label="Signature pad: draw your signature" aria-describedby={p.describedBy} aria-invalid={p.invalid || undefined}
-        className="h-36 w-full touch-none rounded border-2 border-dashed bg-white" style={{ borderColor: "var(--sf-primary)", borderRadius: "var(--sf-radius)" }}
+        className="h-36 w-full touch-none rounded border-2 border-dashed" style={{ borderColor: "var(--sf-primary)", borderRadius: "var(--sf-radius)", background: "var(--sf-bg)" }}
         onPointerDown={e => { if (p.disabled) return; const g = ctx(); if (!g) return; drawing.current = true; canvas.current!.setPointerCapture(e.pointerId); const [x, y] = pos(e); g.strokeStyle = c.penColor; g.lineWidth = 2.5; g.lineCap = "round"; g.beginPath(); g.moveTo(x, y); }}
         onPointerMove={e => { if (!drawing.current) return; const g = ctx(); if (!g) return; const [x, y] = pos(e); g.lineTo(x, y); g.stroke(); }}
         onPointerUp={() => { if (!drawing.current) return; drawing.current = false; p.onChange(canvas.current!.toDataURL("image/png")); }} />
@@ -316,4 +316,57 @@ export function ContentBlock({ question, config }: { question: Question; config:
     case "divider": return <hr className="border-t" style={{ borderColor: "color-mix(in srgb, var(--sf-fg) 20%, transparent)" }} />;
     default: return null;
   }
+}
+
+/**
+ * Ranking: the respondent orders every option. The list always holds a complete order
+ * (the initial/shuffled order is the default answer), so "required" is satisfied as soon
+ * as the question is shown. Reordering uses accessible Up/Down buttons rather than drag
+ * and drop, which is more robust for keyboard, screen-reader and touch users.
+ */
+export function RankingInput(p: FieldInputProps) {
+  const c = p.config as C<{ randomize: boolean }>;
+  const initial = useOrderedOptions(p.question, c.randomize);
+  const labelOf = useMemo(() => new Map((p.question.options ?? []).map(o => [o.value, o.label])), [p.question.options]);
+  const values = useMemo(() => initial.map(o => o.value), [initial]);
+  const current = useMemo(() => {
+    const v = Array.isArray(p.value) ? (p.value as string[]) : [];
+    const valid = v.length === values.length && values.every(x => v.includes(x));
+    return valid ? v : values;
+  }, [p.value, values]);
+  const [announce, setAnnounce] = useState("");
+
+  // Persist the default order so the answer is complete without any interaction.
+  const isDefault = !(Array.isArray(p.value) && p.value.length === values.length && values.every(x => (p.value as string[]).includes(x)));
+  useEffect(() => {
+    if (isDefault && values.length) p.onChange(values);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDefault, values]);
+
+  const move = (index: number, delta: -1 | 1) => {
+    const target = index + delta;
+    if (target < 0 || target >= current.length) return;
+    const next = [...current];
+    [next[index], next[target]] = [next[target]!, next[index]!];
+    p.onChange(next);
+    setAnnounce(`${labelOf.get(next[target]!) ?? next[target]} moved to position ${target + 1} of ${next.length}`);
+  };
+
+  return (
+    <div id={p.inputId} aria-describedby={p.describedBy} aria-invalid={p.invalid || undefined} className="flex flex-col gap-2">
+      <ol className="flex flex-col gap-2" aria-label="Ranked options, most preferred first">
+        {current.map((v, i) => (
+          <li key={v} className="sf-choice items-center">
+            <span className="sf-key" aria-hidden="true">{i + 1}</span>
+            <span className="flex-1">{labelOf.get(v) ?? v}</span>
+            <button type="button" className="sf-btn sf-btn-ghost px-2 py-1 text-xs" disabled={p.disabled || i === 0}
+              onClick={() => move(i, -1)} aria-label={`Move ${labelOf.get(v) ?? v} up`}>▲</button>
+            <button type="button" className="sf-btn sf-btn-ghost px-2 py-1 text-xs" disabled={p.disabled || i === current.length - 1}
+              onClick={() => move(i, 1)} aria-label={`Move ${labelOf.get(v) ?? v} down`}>▼</button>
+          </li>
+        ))}
+      </ol>
+      <p className="sr-only" aria-live="polite">{announce}</p>
+    </div>
+  );
 }

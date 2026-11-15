@@ -7,7 +7,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/features/auth/AuthProvider";
 import { ConfigMissingPage } from "@/pages/ConfigMissingPage";
 import { isSupabaseConfigured } from "@/lib/supabase";
+import { initAdminTheme } from "@/features/theme/adminTheme";
 import "./index.css";
+
+initAdminTheme();
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false } } });
 

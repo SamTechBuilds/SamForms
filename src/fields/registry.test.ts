@@ -9,7 +9,7 @@ const q = (type: Question["type"], patch: Partial<Question> = {}): Question => (
 
 describe("registry completeness", () => {
   it("defines every canonical field type exactly once (27)", () => {
-    expect(FIELD_TYPES).toHaveLength(27);
+    expect(FIELD_TYPES).toHaveLength(28);
     expect(Object.keys(fieldRegistry).sort()).toEqual([...FIELD_TYPES].sort());
     for (const t of FIELD_TYPES) expect(fieldRegistry[t].type).toBe(t);
   });

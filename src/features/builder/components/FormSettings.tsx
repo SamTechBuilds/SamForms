@@ -38,7 +38,7 @@ export function FormSettings({ formId, slug }: { formId: string; slug: string })
       </fieldset>
 
       <div className="space-y-1.5">
-        <Row label="Public link" hint={`Path: ${publicFormPath(slugDraft || "…")} · The public form page goes live in Phase 3. Changing the link after sharing breaks old links.`}>{id => (
+        <Row label="Public link" hint={`Path: ${publicFormPath(slugDraft || "…")} · Changing the link after sharing breaks old links.`}>{id => (
           <div className="flex gap-2">
             <Input id={id} value={slugDraft} maxLength={64} aria-invalid={!slugValid || undefined}
               onChange={e => { setSlugDraft(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-")); setSlugError(null); }} />

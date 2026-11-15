@@ -1,12 +1,14 @@
 import type { ReactNode } from "react";
-export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
+
+export function PageHeader({ title, description, actions, eyebrow }: { title: string; description?: string; actions?: ReactNode; eyebrow?: string }) {
   return (
-    <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
+    <header className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b pb-6">
+      <div className="min-w-0 space-y-1.5">
+        {eyebrow && <p className="text-xs font-semibold uppercase tracking-wider text-primary">{eyebrow}</p>}
+        <h1 className="text-balance text-3xl font-semibold tracking-tight">{title}</h1>
+        {description && <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>}
       </div>
-      {actions}
-    </div>
+      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+    </header>
   );
 }

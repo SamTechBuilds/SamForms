@@ -15,16 +15,27 @@ import { FormRenderer } from "@/features/renderer/FormRenderer";
 import { isInputQuestion } from "@/fields/registry";
 import { PageHeader } from "./PageHeader";
 
-type Mode = "document" | "prompt";
+type Mode = "document" | "prompt" | "url";
+
+function isLikelyUrl(value: string): boolean {
+  try {
+    const u = new URL(value.trim());
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
 
 export function AiCreatePage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const [mode, setMode] = useState<Mode>(params.get("source") === "document" ? "document" : "prompt");
+  const initialMode = params.get("source") === "document" ? "document" : params.get("source") === "url" ? "url" : "prompt";
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("");
   const [documentText, setDocumentText] = useState<string | null>(null);
   const [documentName, setDocumentName] = useState<string | null>(null);
+  const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState<NormalizeResult | null>(null);
@@ -49,17 +60,21 @@ export function AiCreatePage() {
 
   async function generate() {
     setError(null);
-    const input = mode === "prompt"
-      ? { mode: "prompt" as const, prompt: prompt.trim(), title: title.trim() || undefined }
-      : { mode: "document" as const, text: documentText ?? "", title: title.trim() || undefined };
-    if (!input.mode || (input.mode === "prompt" && !input.prompt) || (input.mode === "document" && !input.text)) {
-      setError(mode === "prompt" ? "Describe the form you want." : "Choose a document first.");
-      return;
-    }
+    const titleOrUndefined = title.trim() || undefined;
+    const input =
+      mode === "prompt" ? { mode: "prompt" as const, prompt: prompt.trim(), title: titleOrUndefined } :
+      mode === "url" ? { mode: "url" as const, url: url.trim(), title: titleOrUndefined } :
+      { mode: "document" as const, text: documentText ?? "", title: titleOrUndefined };
+
+    if (mode === "prompt" && !input.prompt) return setError("Describe the form you want.");
+    if (mode === "document" && !("text" in input && input.text)) return setError("Choose a document first.");
+    if (mode === "url" && (!("url" in input && input.url) || !isLikelyUrl(input.url ?? ""))) return setError("Enter a valid web address, starting with http:// or https://.");
+
     setBusy(true);
     try {
       const raw = await requestDraft(input);
-      setDraft(normalizeGeneratedForm(raw, title || (mode === "prompt" ? "New form" : documentName ?? "New form")));
+      const fallbackTitle = mode === "prompt" ? "New form" : mode === "url" ? "New form" : documentName ?? "New form";
+      setDraft(normalizeGeneratedForm(raw, title || fallbackTitle));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
@@ -134,9 +149,10 @@ export function AiCreatePage() {
       <PageHeader title="Generate a form with AI" description="Describe the form, or start from a document. An administrator reviews every draft before it can be published." />
       <Card className="max-w-2xl">
         <CardContent className="space-y-5 p-6">
-          <div role="tablist" aria-label="Source" className="inline-flex rounded-md border p-1">
+          <div role="tablist" aria-label="Source" className="inline-flex flex-wrap rounded-md border p-1">
             <Button role="tab" aria-selected={mode === "prompt"} variant={mode === "prompt" ? "default" : "ghost"} size="sm" onClick={() => setMode("prompt")}>From a description</Button>
             <Button role="tab" aria-selected={mode === "document"} variant={mode === "document" ? "default" : "ghost"} size="sm" onClick={() => setMode("document")}>From a document</Button>
+            <Button role="tab" aria-selected={mode === "url"} variant={mode === "url" ? "default" : "ghost"} size="sm" onClick={() => setMode("url")}>From a link</Button>
           </div>
 
           {mode === "prompt" ? (
@@ -146,12 +162,21 @@ export function AiCreatePage() {
                 placeholder="e.g. A job application for a barista: name, contact details, availability, past experience and a short cover note." />
               <p className="mt-1 text-xs text-muted-foreground">{prompt.length}/{MAX_PROMPT_CHARS_UI}</p>
             </div>
-          ) : (
+          ) : mode === "document" ? (
             <div>
               <Label htmlFor="ai-file">Document</Label>
               <Input id="ai-file" type="file" accept={ACCEPTED_DOCUMENTS} disabled={busy} onChange={e => void onFile(e.target.files?.[0])} />
               <p className="mt-1 text-xs text-muted-foreground">
                 {documentName ? `Using ${documentName} (${(documentText ?? "").length.toLocaleString()} characters)` : "DOCX, PDF, XLSX, CSV, TXT or Markdown, up to 10 MB."}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="ai-url">Link to an existing form or page</Label>
+              <Input id="ai-url" type="url" inputMode="url" value={url} onChange={e => setUrl(e.target.value)}
+                placeholder="https://example.com/some-form" />
+              <p className="mt-1 text-xs text-muted-foreground">
+                We read the page's text on the server and draft a new form from it — nothing is copied or published automatically, and the result is yours to edit before saving.
               </p>
             </div>
           )}

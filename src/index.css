@@ -14,8 +14,36 @@
     --border: 214 32% 91%; --input: 214 32% 85%; --ring: 224 76% 48%;
     --radius: 0.6rem;
   }
+  .dark {
+    --background: 224 36% 7%; --foreground: 210 40% 96%;
+    --card: 224 32% 10%; --card-foreground: 210 40% 96%;
+    --primary: 217 91% 64%; --primary-foreground: 224 36% 7%;
+    --secondary: 217 26% 17%; --secondary-foreground: 210 40% 96%;
+    --muted: 217 26% 15%; --muted-foreground: 215 20% 72%;
+    --accent: 217 26% 18%; --accent-foreground: 210 40% 96%;
+    --destructive: 0 63% 52%; --destructive-foreground: 0 0% 100%;
+    --border: 217 24% 20%; --input: 217 24% 26%; --ring: 217 91% 64%;
+  }
+  /* Accent overrides layer on top of the light/dark palette above. "blue" is the default and needs no override. */
+  [data-accent="violet"] { --primary: 262 83% 46%; --primary-foreground: 0 0% 100%; --ring: 262 83% 46%; }
+  [data-accent="violet"].dark { --primary: 263 85% 68%; --primary-foreground: 261 45% 8%; --ring: 263 85% 68%; }
+  [data-accent="emerald"] { --primary: 152 69% 30%; --primary-foreground: 0 0% 100%; --ring: 152 69% 30%; }
+  [data-accent="emerald"].dark { --primary: 152 60% 55%; --primary-foreground: 160 50% 5%; --ring: 152 60% 55%; }
+  [data-accent="rose"] { --primary: 346 77% 40%; --primary-foreground: 0 0% 100%; --ring: 346 77% 40%; }
+  [data-accent="rose"].dark { --primary: 346 80% 65%; --primary-foreground: 345 45% 9%; --ring: 346 80% 65%; }
+  [data-accent="amber"] { --primary: 36 92% 32%; --primary-foreground: 0 0% 100%; --ring: 36 92% 32%; }
+  [data-accent="amber"].dark { --primary: 42 90% 55%; --primary-foreground: 35 60% 7%; --ring: 42 90% 55%; }
+
   * { @apply border-border; }
-  body { @apply bg-background text-foreground antialiased; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  }
 }
 
 /* ------------------------------------------------------------------
@@ -23,7 +51,16 @@
    Shared by the builder preview now and the public renderer in Phase 3.
    ------------------------------------------------------------------ */
 @layer components {
-  .sf-root { background: var(--sf-bg); color: var(--sf-fg); font-family: var(--sf-font); }
+  .page-enter { animation: page-enter 0.25s ease-out; }
+  @keyframes page-enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .sf-root {
+    background-color: var(--sf-bg);
+    background-image: var(--sf-wallpaper-image, none);
+    background-size: var(--sf-wallpaper-size, auto);
+    color: var(--sf-fg);
+    font-family: var(--sf-font);
+  }
   .sf-muted { color: var(--sf-muted); }
   .sf-input {
     width: 100%; background: transparent; color: var(--sf-fg); font: inherit; font-size: 1.05rem;

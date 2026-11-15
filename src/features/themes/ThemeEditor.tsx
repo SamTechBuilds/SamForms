@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { AlertTriangle, Check } from "lucide-react";
 import type { FormDefinition } from "@/schema/form";
 import { Input } from "@/components/ui/input";
@@ -5,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
 import { Row, SwitchRow } from "@/fields/ui/editors";
 import { cn } from "@/lib/utils";
-import { FONT_STACKS, THEME_PRESETS, themeWarnings, type Theme } from "./theme";
+import { FONT_STACKS, THEME_PRESETS, WALLPAPERS, themeToCssVars, themeWarnings, type Theme } from "./theme";
 
 type Screen = NonNullable<FormDefinition["welcomeScreen"]>;
 
@@ -52,7 +53,7 @@ export function ThemeEditor({ form, setTheme, setScreen }: ThemeEditorProps) {
     <div className="space-y-6 p-4">
       <section className="space-y-3">
         <h2 className="text-sm font-semibold">Presets</h2>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2.5">
           {THEME_PRESETS.map(p => (
             <button key={p.id} type="button" aria-pressed={t.preset === p.id} onClick={() => setTheme(p.theme)}
               className={cn("relative overflow-hidden rounded-md border p-2 text-left text-xs", t.preset === p.id ? "border-primary ring-2 ring-primary/30" : "hover:border-primary/50")}>
@@ -72,7 +73,7 @@ export function ThemeEditor({ form, setTheme, setScreen }: ThemeEditorProps) {
         <ColorField label="Background" value={t.background} onChange={background => custom({ background })} />
         <ColorField label="Primary" value={t.primary} onChange={primary => custom({ primary })} />
         <ColorField label="Secondary" value={t.secondary} onChange={secondary => custom({ secondary })} />
-        {warnings.map(m => <p key={m} className="flex gap-2 rounded-md bg-amber-50 p-2 text-xs text-amber-900"><AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />{m}</p>)}
+        {warnings.map(m => <p key={m} className="flex gap-2 rounded-md bg-amber-50 p-2 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200"><AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />{m}</p>)}
       </section>
 
       <section className="space-y-4">
@@ -85,6 +86,23 @@ export function ThemeEditor({ form, setTheme, setScreen }: ThemeEditorProps) {
         <Segmented label="Inputs" value={t.inputStyle} options={[["underline", "Underline"], ["outlined", "Outlined"], ["filled", "Filled"]] as const} onChange={inputStyle => custom({ inputStyle })} />
         <Row label={`Corner radius: ${t.borderRadius}px`}>{id => <input id={id} type="range" min={0} max={32} value={t.borderRadius} onChange={e => custom({ borderRadius: Number(e.target.value) })} className="w-full accent-[hsl(var(--primary))]" />}</Row>
         <Segmented label="Progress indicator" value={t.progress} options={[["bar", "Bar"], ["steps", "Steps"], ["percent", "Percent"], ["none", "None"]] as const} onChange={progress => custom({ progress })} />
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold">Wallpaper</h2>
+        <p className="text-xs text-muted-foreground">A subtle backdrop behind the form, built from this theme's own colours.</p>
+        <div className="grid grid-cols-3 gap-2.5">
+          {WALLPAPERS.map(wp => {
+            const preview = themeToCssVars({ ...t, wallpaper: wp.id });
+            return (
+              <button key={wp.id} type="button" aria-pressed={t.wallpaper === wp.id} onClick={() => custom({ wallpaper: wp.id })}
+                className={cn("overflow-hidden rounded-md border text-left text-xs", t.wallpaper === wp.id ? "border-primary ring-2 ring-primary/30" : "hover:border-primary/50")}>
+                <div className="h-12 w-full" style={{ ...preview, backgroundColor: "var(--sf-bg)", backgroundImage: "var(--sf-wallpaper-image)", backgroundSize: "var(--sf-wallpaper-size)" } as CSSProperties} />
+                <span className="block px-2 py-1 font-medium">{wp.name}</span>
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       <section className="space-y-3">

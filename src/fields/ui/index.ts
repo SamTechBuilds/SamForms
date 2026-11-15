@@ -2,7 +2,7 @@ import type { ComponentType } from "react";
 import {
   AlignLeft, AtSign, Calendar, CalendarRange, CheckSquare, ChevronDownSquare, CircleDot, Clock, DollarSign, Gauge, Hash,
   Heading, Image as ImageIcon, ImagePlus, Link, Minus, Palette, PenLine, Phone, SlidersHorizontal, Star, Text, ToggleLeft,
-  Type, Upload, User, type LucideIcon, ThumbsUp,
+  Type, Upload, User, type LucideIcon, ThumbsUp, ListOrdered,
 } from "lucide-react";
 import type { FieldType } from "@/schema/form";
 import * as I from "./inputs";
@@ -29,6 +29,7 @@ export const fieldUi: Record<FieldType, FieldUi> = {
   single_choice: { icon: CircleDot, Input: I.SingleChoiceInput, ConfigEditor: E.ChoiceEditor },
   multiple_choice: { icon: CheckSquare, Input: I.MultipleChoiceInput, ConfigEditor: E.ChoiceEditor },
   dropdown: { icon: ChevronDownSquare, Input: I.DropdownInput },
+  ranking: { icon: ListOrdered, Input: I.RankingInput, ConfigEditor: E.RankingEditor },
   yes_no: { icon: ThumbsUp, Input: I.YesNoInput, ConfigEditor: E.YesNoEditor },
   toggle: { icon: ToggleLeft, Input: I.ToggleInput, ConfigEditor: E.ToggleEditor },
   date: { icon: Calendar, Input: I.DateInput, ConfigEditor: E.DateEditor },

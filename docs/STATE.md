@@ -8,14 +8,21 @@
 - **Notifications** (Phase 6): per-form switch and recipient on the responses page. The `send-notifications` Edge Function sends an email for each new response through Resend. Emails include no answers. Queue claim is `SKIP LOCKED`, with up to five attempts.
 - **Hardening** (Phase 6): CSP header in `netlify.toml`, vendor chunks split, axe-core checks on the public form and the notification card, and two browser tests.
 
+## UI and themes (latest pass)
+- **Admin colour mode**: Light, Dark or System, chosen with a toggle in the sidebar (and the mobile header). The choice is stored per browser and applied before the first render. The dark palette uses the same CSS variables, so existing components adapt without changes.
+- **Admin shell**: brand mark, grouped navigation (Workspace, Create, Account) with a clear active state, a user card, and a centred content width. Page headers have a clearer type scale.
+- **Form themes**: four new presets (Ocean, Rose, Noir, Paper), for ten in total. A test checks that every preset meets WCAG text and button contrast.
+- **Fixes**: the public form's theme background now fills the whole viewport (it previously stopped at the form's edge). Hardcoded light colours in the theme editor's warning box and the image upload area now follow the theme.
+- Reduced-motion users get no transitions or page animation.
+
 ## Migrations (apply in order)
 `20261113000001` … `20261114000006` (six files). See `DEPLOY.md`.
 
 ## Test results (executed in this sandbox)
 - `npm run typecheck`: clean. `npm run lint`: clean.
-- `npx vitest run`: **26 files, 236 tests, all passing.** This includes the PGlite database tests for migrations 0001 to 0006, the Node tests for the Edge Function shared code, the AI client tests (normaliser, extraction for TXT, CSV, XLSX and DOCX, and the AI page flow with the model call mocked), the notification tests, and the axe accessibility tests.
+- `npx vitest run`: **27 files, 241 tests, all passing** (includes the colour mode and preset contrast tests). This includes the PGlite database tests for migrations 0001 to 0006, the Node tests for the Edge Function shared code, the AI client tests (normaliser, extraction for TXT, CSV, XLSX and DOCX, and the AI page flow with the model call mocked), the notification tests, and the axe accessibility tests.
 - `npm run build`: succeeds. The entry chunk is about 125 kB (38 kB gzip). Largest vendor chunk is about 250 kB. The three large chunks (`exceljs`, `pdfjs`, and the PDF worker) load only when a user uploads a document or exports to Excel, so the build's size warning limit was raised with a comment in `vite.config.ts`.
-- `npx playwright test`: **2 passing** in system Chrome (`/usr/bin/google-chrome`) against the production build. Covers a respondent filling and submitting a published form, and an unknown slug.
+- `npx playwright test`: **2 passing** (rerun after the UI pass) in system Chrome (`/usr/bin/google-chrome`) against the production build. Covers a respondent filling and submitting a published form, and an unknown slug.
 - `npm audit`: **0 vulnerabilities**.
 
 ## NOT verified (honest gaps)

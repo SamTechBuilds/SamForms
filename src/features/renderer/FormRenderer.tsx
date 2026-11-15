@@ -32,7 +32,7 @@ export function QuestionBlock({ q, value, error, onChange, autoFocus }: { q: Que
   const id = `sf-${q.id}`;
   const descId = q.description ? `${id}-desc` : undefined;
   const errId = error ? `${id}-err` : undefined;
-  const groupLike = ["single_choice", "multiple_choice", "yes_no", "star_rating", "linear_scale", "opinion_scale"].includes(q.type);
+  const groupLike = ["single_choice", "multiple_choice", "ranking", "yes_no", "star_rating", "linear_scale", "opinion_scale"].includes(q.type);
   const LabelTag = groupLike ? "p" : "label";
   return (
     <div data-autofocus={autoFocus || undefined}>

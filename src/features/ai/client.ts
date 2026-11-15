@@ -2,7 +2,8 @@ import { supabase } from "@/lib/supabase";
 
 export type GenerateInput =
   | { mode: "prompt"; prompt: string; title?: string }
-  | { mode: "document"; text: string; title?: string };
+  | { mode: "document"; text: string; title?: string }
+  | { mode: "url"; url: string; title?: string };
 
 /** Calls the ai-generate Edge Function as the signed-in admin and returns the raw draft. */
 export async function requestDraft(input: GenerateInput): Promise<unknown> {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, Eye, Globe, Loader2, Pencil, Redo2, RefreshCw, History, LayoutTemplate, Undo2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Eye, Globe, Loader2, Pencil, Redo2, RefreshCw, History, LayoutTemplate, Star, Undo2 } from "lucide-react";
 import { FormSchema, type FormDefinition, type Question } from "@/schema/form";
 import type { FormRow } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
@@ -175,6 +175,10 @@ export function BuilderWorkspace({ row, initial }: { row: FormRow; initial: Form
           </aside>
 
           <section aria-label="Form canvas" className={cn(panelClass("canvas"), "flex-col bg-muted/30")}>
+            <div className="flex items-center gap-2 border-b bg-card px-4 py-3">
+              <Star className="h-4 w-4 text-primary" aria-hidden="true" />
+              <h2 className="text-sm font-semibold">Live preview</h2>
+            </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
               {mode === "preview" ? (
                 <div className="mx-auto my-4 max-w-3xl overflow-hidden rounded-lg border bg-background shadow-sm">
@@ -206,7 +210,7 @@ export function BuilderWorkspace({ row, initial }: { row: FormRow; initial: Form
           </aside>
         </div>
 
-        <p className="hidden text-xs text-muted-foreground lg:block">Public link: <span className="font-mono">{publicFormUrl(row.slug)}</span> · Public responses open in Phase 3.</p>
+        <p className="hidden text-xs text-muted-foreground lg:block">Public link: <span className="font-mono">{publicFormUrl(row.slug)}</span></p>
       </div>
 
       <PublishDialog open={publishOpen} onOpenChange={setPublishOpen} form={form} isPublished={isPublished} onPublish={onPublish} />

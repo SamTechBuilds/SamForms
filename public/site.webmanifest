@@ -1,0 +1,14 @@
+{
+  "name": "STB Forms",
+  "short_name": "STB Forms",
+  "description": "Build, publish and collect responses on your own forms.",
+  "icons": [
+    { "src": "/favicon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "theme_color": "#0b63f6",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/"
+}

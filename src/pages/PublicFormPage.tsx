@@ -22,11 +22,10 @@ export function PublicFormPage() {
   if (!query.data) return <Notice title="Form not available" message="This form doesn't exist or is no longer accepting responses." />;
 
   return (
-    <div className="min-h-screen">
-      <FileUploaderContext.Provider value={uploader}>
-        <FormRenderer form={query.data.schema} onSubmit={answers => submitPublicResponse(slug, answers)} />
-      </FileUploaderContext.Provider>
-    </div>
+    <FileUploaderContext.Provider value={uploader}>
+      {/* The renderer's root carries the theme background, so it must fill the viewport on its own. */}
+      <FormRenderer form={query.data.schema} className="min-h-screen" onSubmit={answers => submitPublicResponse(slug, answers)} />
+    </FileUploaderContext.Provider>
   );
 }
 

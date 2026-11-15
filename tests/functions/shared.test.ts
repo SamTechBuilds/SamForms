@@ -1,7 +1,46 @@
 import { describe, it, expect, vi } from "vitest";
 import { FIELD_TYPES } from "@/schema/form";
-import { FIELD_TYPE_LIST, MAX_DOCUMENT_CHARS, ModelError, buildMessages, callOpenRouter, extractJsonObject, parseRequest } from "../../supabase/functions/_shared/ai";
+import { FIELD_TYPE_LIST, MAX_DOCUMENT_CHARS, ModelError, buildMessages, callOpenRouter, extractJsonObject, extractReadableText, isSafeHttpUrl, parseRequest } from "../../supabase/functions/_shared/ai";
 import { buildNotificationEmail, escapeHtml, safeEqual } from "../../supabase/functions/_shared/notify";
+
+describe("ai shared logic — link import (SSRF guards + text extraction)", () => {
+  it("accepts ordinary public http(s) URLs", () => {
+    expect(isSafeHttpUrl("https://example.com/form")).toMatchObject({ ok: true });
+    expect(isSafeHttpUrl("http://example.com")).toMatchObject({ ok: true });
+  });
+
+  it("rejects non-http(s) schemes", () => {
+    expect(isSafeHttpUrl("ftp://example.com")).toMatchObject({ ok: false });
+    expect(isSafeHttpUrl("file:///etc/passwd")).toMatchObject({ ok: false });
+    expect(isSafeHttpUrl("not a url")).toMatchObject({ ok: false });
+  });
+
+  it("rejects loopback, private and link-local addresses", () => {
+    for (const bad of ["http://localhost/", "http://127.0.0.1/", "http://0.0.0.0/", "http://10.1.2.3/", "http://192.168.1.1/", "http://172.16.0.1/", "http://169.254.169.254/latest/meta-data"]) {
+      expect(isSafeHttpUrl(bad), bad).toMatchObject({ ok: false });
+    }
+  });
+
+  it("allows a public IPv4 address but not a raw IPv6 host", () => {
+    expect(isSafeHttpUrl("http://8.8.8.8/")).toMatchObject({ ok: true });
+    expect(isSafeHttpUrl("http://[::1]/")).toMatchObject({ ok: false });
+  });
+
+  it("strips scripts, styles and tags down to readable text", () => {
+    const html = `<html><head><style>.x{color:red}</style><script>evil()</script></head>
+      <body><h1>Contact us</h1><p>Tell us &amp; we&#39;ll reply.</p><div>Name:</div></body></html>`;
+    const text = extractReadableText(html);
+    expect(text).not.toMatch(/evil\(\)|color:red/);
+    expect(text).toContain("Contact us");
+    expect(text).toContain("Tell us & we'll reply.");
+    expect(text).toContain("Name:");
+  });
+
+  it("truncates to the document character limit", () => {
+    const huge = `<p>${"x".repeat(MAX_DOCUMENT_CHARS + 500)}</p>`;
+    expect(extractReadableText(huge).length).toBeLessThanOrEqual(MAX_DOCUMENT_CHARS);
+  });
+});
 
 describe("ai shared logic", () => {
   it("lists exactly the canonical field types", () => {

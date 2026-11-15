@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ThemeSchema, FormSchema } from "@/schema/form";
-import { THEME_PRESETS, contrastRatio, readableOn, themeToCssVars, themeWarnings } from "./theme";
+import { THEME_PRESETS, WALLPAPERS, contrastRatio, readableOn, themeToCssVars, themeWarnings } from "./theme";
 import { blankForm } from "@/features/builder/factory";
 
 describe("theme configuration", () => {
@@ -11,6 +11,14 @@ describe("theme configuration", () => {
       expect(FormSchema.safeParse(f).success, p.id).toBe(true);
     }
     expect(new Set(THEME_PRESETS.map(p => p.id)).size).toBe(THEME_PRESETS.length);
+  });
+  it("every preset keeps text and buttons readable", () => {
+    for (const p of THEME_PRESETS) {
+      const fg = readableOn(p.theme.background);
+      expect(contrastRatio(fg, p.theme.background), `${p.id} text`).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(readableOn(p.theme.primary), p.theme.primary), `${p.id} button`).toBeGreaterThanOrEqual(4.5);
+      expect(themeWarnings(p.theme), p.id).toEqual([]);
+    }
   });
   it("defaults are applied by the canonical schema", () => {
     const t = ThemeSchema.parse({});
@@ -32,5 +40,27 @@ describe("theme configuration", () => {
     expect(readableOn("#000000")).toBe("#ffffff");
     expect(themeWarnings(ThemeSchema.parse({ primary: "#fefefe", background: "#ffffff" }))).toHaveLength(1);
     expect(themeWarnings(ThemeSchema.parse({}))).toEqual([]);
+  });
+});
+
+describe("wallpapers", () => {
+  it("default to flat (no background-image), so old published forms render unchanged", () => {
+    const parsed = ThemeSchema.parse({});
+    expect(parsed.wallpaper).toBe("flat");
+    expect(themeToCssVars(parsed)["--sf-wallpaper-image" as never]).toBe("none");
+  });
+
+  it("every wallpaper produces CSS vars without throwing, for every preset", () => {
+    for (const wp of WALLPAPERS) {
+      for (const preset of THEME_PRESETS) {
+        const vars = themeToCssVars({ ...preset.theme, wallpaper: wp.id });
+        expect(typeof vars["--sf-wallpaper-image" as never]).toBe("string");
+      }
+    }
+  });
+
+  it("non-flat wallpapers derive their colour from the theme, not a fixed value", () => {
+    const vars = themeToCssVars(ThemeSchema.parse({ wallpaper: "dots" }));
+    expect(vars["--sf-wallpaper-image" as never]).toContain("var(--sf-fg)");
   });
 });

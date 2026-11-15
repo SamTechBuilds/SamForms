@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { GripVertical, Search, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { fieldsByCategory } from "@/fields/registry";
 import { fieldUi } from "@/fields/ui";
@@ -15,6 +15,10 @@ export function FieldPalette({ onAdded }: { onAdded?: () => void }) {
     .filter(c => c.fields.length);
   return (
     <div className="flex h-full flex-col">
+      <div className="flex items-center gap-2 border-b px-4 py-3">
+        <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+        <h2 className="text-sm font-semibold">Form builder</h2>
+      </div>
       <div className="border-b p-3">
         <div className="relative">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
@@ -25,15 +29,16 @@ export function FieldPalette({ onAdded }: { onAdded?: () => void }) {
         {groups.map(c => (
           <section key={c.id} aria-labelledby={`cat-${c.id}`}>
             <h3 id={`cat-${c.id}`} className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{c.label}</h3>
-            <ul className="grid grid-cols-2 gap-1.5 lg:grid-cols-1 xl:grid-cols-2">
+            <ul className="grid grid-cols-2 gap-2">
               {c.fields.map(f => {
                 const Icon = fieldUi[f.type].icon;
                 return (
                   <li key={f.type}>
                     <button type="button" title={f.description} onClick={() => { addQuestion(f.type); onAdded?.(); }}
-                      className="flex w-full items-center gap-2 rounded-md border bg-background px-2 py-1.5 text-left text-sm hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                      className="group flex w-full items-center gap-2 rounded-lg bg-muted/60 px-2.5 py-2.5 text-left text-sm transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                       <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                      <span className="truncate">{f.label}</span>
+                      <span className="min-w-0 flex-1 truncate">{f.label}</span>
+                      <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60 group-hover:text-muted-foreground" aria-hidden="true" />
                     </button>
                   </li>
                 );

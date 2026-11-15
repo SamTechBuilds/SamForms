@@ -209,6 +209,12 @@ describe("form_templates", () => {
       expect(res.issues, t.name).toEqual([]);
     }
   });
+  it("ships a wide gallery covering common real-world form categories", async () => {
+    const r = await as(db, admin, () => db.query<{ category: string }>("select distinct category from form_templates where is_system order by category"));
+    const categories = r.rows.map(row => row.category);
+    expect(categories.length).toBeGreaterThanOrEqual(8);
+    for (const must of ["events", "sales", "support", "education"]) expect(categories).toContain(must);
+  });
   it("admin can create, update and delete custom templates but not touch system ones", async () => {
     const ins = await as(db, admin, () => db.query<{ id: string }>(
       `insert into form_templates (name, category, schema, created_by) values ('Mine','general',${lit(validSchema())},'${ADMIN_ID}') returning id`));

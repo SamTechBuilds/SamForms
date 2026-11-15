@@ -164,7 +164,7 @@ export const HeadingEditor = ({ config, setConfig }: ConfigEditorProps) => (
 );
 export const ImageEditor = ({ config, setConfig }: ConfigEditorProps) => (
   <div className="space-y-3">
-    <Row label="Image URL" hint="https:// only. Uploading images from your device arrives with storage in Phase 3.">{id => (
+    <Row label="Image URL" hint="https:// only.">{id => (
       <Input id={id} type="url" placeholder="https://…" value={(config.url as string) ?? ""} onChange={e => setConfig({ url: optStr(e.target.value) })} />)}</Row>
     <Row label="Alt text" hint="Describes the image for screen readers.">{id => <Input id={id} value={config.alt as string} maxLength={300} onChange={e => setConfig({ alt: e.target.value })} />}</Row>
     <Row label="Size">{id => (
@@ -172,4 +172,7 @@ export const ImageEditor = ({ config, setConfig }: ConfigEditorProps) => (
         <option value="small">Small</option><option value="medium">Medium</option><option value="full">Full width</option>
       </NativeSelect>)}</Row>
   </div>
+);
+export const RankingEditor = ({ config, setConfig }: ConfigEditorProps) => (
+  <SwitchRow label="Shuffle starting order" checked={config.randomize as boolean} onChange={randomize => setConfig({ randomize })} />
 );

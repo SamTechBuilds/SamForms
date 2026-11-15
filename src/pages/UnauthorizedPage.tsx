@@ -8,7 +8,7 @@ export function UnauthorizedPage() {
   if (state.status === "signed_out") return <Navigate to="/login" replace />;
   if (state.status === "authorized") return <Navigate to="/" replace />;
   return (
-    <AuthShell title="Access denied" description="This account is not authorized to use Sam Forms.">
+    <AuthShell title="Access denied" description="This account is not authorized to use STB Forms.">
       <p className="mb-4 text-sm text-muted-foreground">
         {state.status === "unauthorized" && state.email ? `Signed in as ${state.email}. ` : ""}
         Only the allowlisted administrator can access this application.

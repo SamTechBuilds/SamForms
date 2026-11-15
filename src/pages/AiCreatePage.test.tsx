@@ -43,6 +43,29 @@ describe("AiCreatePage", () => {
     expect(arg.schema.questions).toHaveLength(1);
   });
 
+  it("generates a draft from a link", async () => {
+    requestDraft.mockResolvedValue({
+      title: "Event registration",
+      questions: [{ type: "name", label: "Full name", required: true }],
+    });
+    render(<MemoryRouter><AiCreatePage /></MemoryRouter>);
+    await userEvent.click(screen.getByRole("tab", { name: "From a link" }));
+    await userEvent.type(screen.getByLabelText(/link to an existing form/i), "https://example.com/rsvp");
+    await userEvent.click(screen.getByRole("button", { name: /generate draft/i }));
+
+    expect(await screen.findByRole("heading", { name: "Review the AI draft" })).toBeInTheDocument();
+    expect(requestDraft).toHaveBeenCalledWith(expect.objectContaining({ mode: "url", url: "https://example.com/rsvp" }));
+  });
+
+  it("rejects an invalid link before calling the server", async () => {
+    render(<MemoryRouter><AiCreatePage /></MemoryRouter>);
+    await userEvent.click(screen.getByRole("tab", { name: "From a link" }));
+    await userEvent.type(screen.getByLabelText(/link to an existing form/i), "not a link");
+    await userEvent.click(screen.getByRole("button", { name: /generate draft/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(/valid web address/i);
+    expect(requestDraft).not.toHaveBeenCalled();
+  });
+
   it("shows the server's message when generation is refused", async () => {
     requestDraft.mockRejectedValue(new Error("You have reached the hourly AI limit. Try again later."));
     render(<MemoryRouter><AiCreatePage /></MemoryRouter>);

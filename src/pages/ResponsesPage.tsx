@@ -130,14 +130,15 @@ export function ResponsesPage() {
       ) : list.data.rows.length === 0 ? (
         <Card><CardContent className="p-8 text-center text-sm text-muted-foreground">No responses match these filters yet.</CardContent></Card>
       ) : (
-        <div className="overflow-x-auto rounded-md border">
+        <div className="overflow-x-auto rounded-xl border bg-card shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-left">
-              <tr><th className="p-3 font-medium">Submitted</th><th className="p-3 font-medium">Answers</th><th className="p-3 font-medium">Files</th><th className="p-3 text-right font-medium"><span className="sr-only">Actions</span></th></tr>
+            <thead className="bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr><th scope="col" className="p-3 font-medium">Response ID</th><th scope="col" className="p-3 font-medium">Submitted</th><th scope="col" className="p-3 font-medium">Answers</th><th scope="col" className="p-3 font-medium">Files</th><th scope="col" className="p-3 text-right font-medium"><span className="sr-only">Actions</span></th></tr>
             </thead>
             <tbody>
               {list.data.rows.map(r => (
-                <tr key={r.id} className="border-t">
+                <tr key={r.id} className="border-t transition-colors hover:bg-muted/30">
+                  <td className="whitespace-nowrap p-3 font-mono text-xs text-muted-foreground" title={r.id}>{r.id.slice(0, 8)}</td>
                   <td className="whitespace-nowrap p-3" title={new Date(r.submitted_at).toLocaleString()}>{timeAgo(r.submitted_at)}</td>
                   <td className="max-w-md truncate p-3 text-muted-foreground">{preview(r) || "No answers shown"}</td>
                   <td className="p-3">{r.submission_files.length}</td>
@@ -159,11 +160,11 @@ export function ResponsesPage() {
       )}
 
       {list.data && list.data.total > PAGE_SIZE && (
-        <nav className="mt-4 flex items-center justify-between text-sm" aria-label="Responses pages">
-          <span className="text-muted-foreground">Page {page + 1} of {totalPages} · {list.data.total} total</span>
+        <nav className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm" aria-label="Responses pages">
+          <span className="text-muted-foreground">Showing {page * PAGE_SIZE + 1}–{Math.min(list.data.total, (page + 1) * PAGE_SIZE)} of {list.data.total} · page {page + 1} of {totalPages}</span>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft className="h-4 w-4" />Previous</Button>
-            <Button variant="outline" size="sm" disabled={page + 1 >= totalPages} onClick={() => setPage(p => p + 1)}>Next<ChevronRight className="h-4 w-4" /></Button>
+            <Button variant="outline" size="sm" className="gap-1" disabled={page === 0} onClick={() => setPage(p => p - 1)}><ChevronLeft className="h-4 w-4" />Previous</Button>
+            <Button variant="outline" size="sm" className="gap-1" disabled={page + 1 >= totalPages} onClick={() => setPage(p => p + 1)}>Next<ChevronRight className="h-4 w-4" /></Button>
           </div>
         </nav>
       )}

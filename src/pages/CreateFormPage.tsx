@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FileUp, Sparkles, LayoutTemplate } from "lucide-react";
+import { FileUp, Link2, Sparkles, LayoutTemplate } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,8 +68,9 @@ export function CreateFormPage() {
 
         <Card className="xl:col-span-3">
           <CardHeader><CardTitle>Other ways to start</CardTitle><CardDescription>Generate a draft from a document or a description. Every draft is reviewed by you before it is saved.</CardDescription></CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2">
+          <CardContent className="grid gap-3 sm:grid-cols-3">
             <Link to="/forms/new/ai?source=document" className="flex items-start gap-3 rounded-md border p-3 hover:bg-accent"><FileUp className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" /><div><p className="font-medium">Import a document</p><p className="text-xs text-muted-foreground">DOCX, PDF, XLSX, CSV, TXT or Markdown become questions you review.</p></div></Link>
+            <Link to="/forms/new/ai?source=url" className="flex items-start gap-3 rounded-md border p-3 hover:bg-accent"><Link2 className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" /><div><p className="font-medium">Import from a link</p><p className="text-xs text-muted-foreground">Paste a link to an existing form or page and review a new draft built from it.</p></div></Link>
             <Link to="/forms/new/ai" className="flex items-start gap-3 rounded-md border p-3 hover:bg-accent"><Sparkles className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" /><div><p className="font-medium">Generate with AI</p><p className="text-xs text-muted-foreground">Describe the form in plain language and review the draft.</p></div></Link>
           </CardContent>
         </Card>

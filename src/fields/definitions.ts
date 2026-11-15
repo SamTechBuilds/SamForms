@@ -72,6 +72,13 @@ const Empty = z.object({});
 const content = { isContent: true, hasOptions: false, supportsPlaceholder: false, validationKeys: NONE, answerSchema: () => null, formatAnswer: () => "", sampleAnswer: () => undefined } as const;
 const defaultOptions = () => [1, 2, 3].map(i => ({ id: `opt${i}`, label: `Option ${i}`, value: `option_${i}` }));
 const ChoiceConfig = z.object({ allowOther: z.boolean().default(false), randomize: z.boolean().default(false) });
+// Randomised by default: showing ranking items in a fixed order biases respondents toward ranking
+// the first items higher, so shuffling the initial order is the common mitigation.
+const RankingConfig = z.object({ randomize: z.boolean().default(true) });
+export const isPermutationOfOptions = (q: Question) => (arr: string[]) => {
+  const values = (q.options ?? []).map(o => o.value);
+  return arr.length === values.length && new Set(arr).size === values.length && values.every(v => arr.includes(v));
+};
 const choiceAllowed = (q: Question, allowOther: boolean) => (x: string) => allowOther || (q.options ?? []).some(o => o.value === x);
 
 export const IMAGE_MIME_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
@@ -153,7 +160,7 @@ export const FIELD_DEFINITIONS: Record<FieldType, FieldDefinition> = {
   currency: define({
     type: "currency", label: "Currency", description: "A monetary amount.", category: "numeric",
     isContent: false, hasOptions: false, supportsPlaceholder: true, validationKeys: NUM_V,
-    configSchema: z.object({ currency: z.string().regex(/^[A-Z]{3}$/, "Use a 3-letter ISO currency code").default("USD") }),
+    configSchema: z.object({ currency: z.string().regex(/^[A-Z]{3}$/, "Use a 3-letter ISO currency code").default("INR") }),
     defaults: () => ({ label: "Amount", placeholder: "0.00" }),
     answerSchema: q => numberAnswer(q, false).refine(n => Math.abs(Math.round(n * 100) - n * 100) < 1e-6, "Use at most 2 decimal places"),
     formatAnswer: (v, _q, c) => typeof v === "number" ? `${c.currency} ${v.toFixed(2)}` : str(v),
@@ -183,6 +190,15 @@ export const FIELD_DEFINITIONS: Record<FieldType, FieldDefinition> = {
     },
     formatAnswer: (v, q) => Array.isArray(v) ? v.map(x => optLabel(q, x) ?? `Other: ${str(x)}`).join("; ") : "",
     sampleAnswer: q => (q.options ?? []).slice(0, Math.max(q.validation.minSelections ?? 1, 1)).map(o => o.value),
+  }),
+  ranking: define({
+    type: "ranking", label: "Ranking", description: "Drag or reorder items by preference.", category: "choice",
+    isContent: false, hasOptions: true, supportsPlaceholder: false, validationKeys: NONE,
+    configSchema: RankingConfig,
+    defaults: () => ({ label: "Rank these in order of preference", options: defaultOptions() }),
+    answerSchema: q => z.array(z.string().min(1).max(200)).max(200).refine(isPermutationOfOptions(q), "Put every option in order"),
+    formatAnswer: (v, q) => Array.isArray(v) ? v.map((x, i) => `${i + 1}. ${optLabel(q, x) ?? str(x)}`).join("; ") : "",
+    sampleAnswer: q => (q.options ?? []).map(o => o.value),
   }),
   dropdown: define({
     type: "dropdown", label: "Dropdown", description: "Pick one option from a list.", category: "choice",

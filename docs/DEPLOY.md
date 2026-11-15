@@ -32,13 +32,48 @@ Values are stored by Supabase and read by the functions at runtime. Set them wit
 ```bash
 supabase secrets set \
   OPENROUTER_API_KEY=<key> \
-  OPENROUTER_MODEL=<model id from openrouter.ai> \
-  APP_ORIGIN=https://<your-netlify-site> \
+  OPENROUTER_MODEL=openrouter/free \
+  OPENROUTER_FALLBACK_MODELS=<optional: comma-separated free ":free" model IDs> \
   NOTIFY_CRON_SECRET=<long random string> \
   EMAIL_PROVIDER_API_KEY=<resend api key> \
   NOTIFY_FROM="Sam Forms <forms@your-domain>" \
   NOTIFY_APP_URL=https://<your-netlify-site>
 ```
+
+### CORS for ai-generate
+
+The function allows browser requests only from a built-in allowlist in `supabase/functions/_shared/cors.ts`: `http://localhost:5173` (local development) and `https://stbforms.netlify.app` (production). No secret controls CORS, so `APP_ORIGIN` is no longer read. Any other origin gets 403 with no allow-origin header. Preflight (`OPTIONS`) is answered before authentication, so it does not depend on secrets being set. Every other response, including errors, carries the CORS headers. To add an origin, edit `ALLOWED_ORIGINS` and redeploy. `verify_jwt = true` stays on in `supabase/config.toml`; the function still checks admin rights inside the database.
+
+Deploy after changing the function:
+
+```bash
+npx supabase functions deploy ai-generate
+```
+
+Check the preflight from the terminal (this is a check you run after deploying; it was not run from the build sandbox):
+
+```bash
+curl -i -X OPTIONS https://cdotqcphnuheqqdhrnpp.supabase.co/functions/v1/ai-generate \
+  -H "Origin: http://localhost:5173" \
+  -H "Access-Control-Request-Method: POST" \
+  -H "Access-Control-Request-Headers: authorization, apikey, x-client-info, content-type"
+```
+
+The response should be `204` with `Access-Control-Allow-Origin: http://localhost:5173`.
+
+The browser build must point at the same project. Set `VITE_SUPABASE_URL=https://cdotqcphnuheqqdhrnpp.supabase.co` and the matching `VITE_SUPABASE_ANON_KEY`. Without `VITE_SUPABASE_URL`, the client falls back to `http://localhost:54321`, so AI requests go to the wrong place.
+
+### AI model configuration (free models only)
+
+- `OPENROUTER_MODEL` should be `openrouter/free`, OpenRouter's router over eligible free models.
+- `OPENROUTER_FALLBACK_MODELS` is optional: a comma-separated list of exact model IDs ending in `:free`, for example `<vendor>/<model>:free,<vendor>/<model2>:free`. At most 4 models in total, including the primary.
+- **Price verification:** before any model is called, its pricing is checked against OpenRouter's public model list (`GET https://openrouter.ai/api/v1/models`, no key sent). A configured model must show zero prompt and completion pricing or it is dropped. The model that answers is verified the same way. If the price list cannot be loaded, no draft is generated (fail closed). The list is cached for 10 minutes per function instance.
+- **Refused configuration:** any entry that is not `openrouter/free` or does not end in `:free` is refused, and the function reports a configuration error. Paid models are never called.
+- **Stop rules:** a 401, 402 or 403 stops straight away (key or account problem). A 429 that OpenRouter reports as a platform limit (free per-minute or per-day quota, both account-wide) also stops straight away. Switching models cannot bypass these. A 429 caused by an upstream provider moves on to the next model. Unavailable models (404), provider errors (5xx), timeouts and unreadable replies move on to the next model. An unverified reply stops the chain.
+- **Canonical validation:** every draft is checked against the shared form schema on the server before it is returned. A draft that cannot be used returns HTTP 422 with `code: "invalid_form"` and no schema.
+- **Response metadata:** successful responses include `meta` with `strategy` (`router` or `fallback-chain`), `model` (the model that answered), `fallbackUsed`, `attempts`, `success` and `durationMs`. Logs record model IDs and timings only, never prompts, documents or replies.
+- **Import map:** the shared schema imports `zod`. `supabase/functions/import_map.json` maps it to `npm:zod@4.6.7`, and `supabase/config.toml` points `ai-generate` at that map. Check that the Supabase CLI version you deploy with honours `[functions.ai-generate] import_map` before relying on it.
+- **Limits:** OpenRouter free models are limited to 20 requests per minute per account. Accounts with under $10 of lifetime credit purchases get 50 free requests per day; accounts at or above that threshold get 1,000. The daily cap is shared across all free models.
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are provided to Edge Functions by Supabase. Do not set them yourself.
 
