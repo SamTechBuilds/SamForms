@@ -53,7 +53,7 @@ npx supabase functions deploy ai-generate
 Check the preflight from the terminal (this is a check you run after deploying; it was not run from the build sandbox):
 
 ```bash
-curl -i -X OPTIONS https://cdotqcphnuheqqdhrnpp.supabase.co/functions/v1/ai-generate \
+curl -i -X OPTIONS https://<ref>.supabase.co/functions/v1/ai-generate \
   -H "Origin: http://localhost:5173" \
   -H "Access-Control-Request-Method: POST" \
   -H "Access-Control-Request-Headers: authorization, apikey, x-client-info, content-type"
@@ -61,7 +61,7 @@ curl -i -X OPTIONS https://cdotqcphnuheqqdhrnpp.supabase.co/functions/v1/ai-gene
 
 The response should be `204` with `Access-Control-Allow-Origin: http://localhost:5173`.
 
-The browser build must point at the same project. Set `VITE_SUPABASE_URL=https://cdotqcphnuheqqdhrnpp.supabase.co` and the matching `VITE_SUPABASE_ANON_KEY`. Without `VITE_SUPABASE_URL`, the client falls back to `http://localhost:54321`, so AI requests go to the wrong place.
+The browser build must point at the same project. Set `VITE_SUPABASE_URL=https://<ref>.supabase.co` and the matching `VITE_SUPABASE_ANON_KEY`. Without `VITE_SUPABASE_URL`, the client falls back to `http://localhost:54321`, so AI requests go to the wrong place.
 
 ### AI model configuration (free models only)
 
